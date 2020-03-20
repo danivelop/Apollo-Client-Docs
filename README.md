@@ -1,3 +1,4 @@
+
 # Apollo Client
 ## Introduction
 [Apollo client react공식문서](https://www.apollographql.com/docs/react)를 공부했던 내용들을 한글로 더 편하게 보고 가끔씩 잊어버린 내용들을 리마인드 하기 위해 기존의 공식문서에 부족한 설명이나 빠진내용을 추가하고 너무 자세하게 나와 오히려 빠른 학습에는 방해가 되는 내용은 삭제하며 내용을 정리하던 중, 이 내용을 공유하면 GraphQL을 공부하고 Apollo를 시작하는 분들에게 도움이 되지 않을까 해서 문서를 작성하게 되었습니다. Apollo공식문서도 언급되어 있듯이 기본적인 GraphQL 문법을 알고 React에서 `ApolloProvider`나 `ApolloClient`로 기본적인 셋팅이 되어있다고 가정하여 작성했습니다. GraphQL문법에 익숙하지 않으시다면 [GraphQL Guide](https://graphql-kr.github.io/learn/)를 먼저 학습하신 후 Apollo를 학습하시는 것을 추천드립니다.
@@ -6,19 +7,23 @@
 
 > 저도 아직 부족한게 많은 개발자라 내용중 간혹 틀린부분이 있을 수 있습니다. 그런 경우 알려주시면 더 공부하여 수정하도록 하겠습니다!
 
-## Table of Contents
+## Query
+
+### Table of Contents
 - [Query](#query)
-	- [Code example](#code-example)
-	- [Cache업데이트](#cache업데이트)
+	- [쿼리 실행](#쿼리-실행)
+	- [캐시 업데이트](#캐시-업데이트)
 	- [요청상태 검사](#요청상태-검사)
 	- [에러상태 검사](#에러상태-검사)
 	- [쿼리 수동실행](#쿼리-수동실행)
 	- [useQuery API](#usequery-api)
+- [Mutation](#mutation)
 
-## Query
+
+### 쿼리 실행
 `useQuery` [React hook](https://reactjs.org/docs/hooks-intro.html)은 Apollo에서 쿼리를 실행하는 기본 API입니다. React 구성 요소 내에서 쿼리를 실행하려면 `useQuery`를 호출하고 GraphQL 쿼리 문자열을 매개변수로 전달합니다. 구성 요소가 렌더링되면 `useQuery`는 컴포넌트를 렌더링하는 데 사용할 수 있는 데이터 속성이 포함된 객체를 반환합니다.
 
-### Code example
+#### Code example
 ```javascript
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
@@ -68,7 +73,7 @@ function DogPhoto({ breed }) {
 > ...
 > ```
 
-### Cache업데이트
+### 캐시 업데이트
 `useQuery`가 응답한 데이터를 자동으로 캐시에 저장하기 때문에 최신데이터 상태를 유지하지 못합니다(ex. 게시글목록을 보고 있는데 누군가 새게시글을 작성하더라도 이를 볼 수 없음).
 Apollo는 데이터를 항상 최신상태로 유지하는 방법을 2가지 제공합니다.
 - Polling
@@ -255,3 +260,202 @@ function DogPhoto({ breed }) {
 |`updateQuery`|(previousResult: TData, options: { variables: TVariables }) => TData|fetch, mutation, subscription외에 캐시를 업데이트 할 수 있도록 해주는 함수|
 |`client`|ApolloClient|`ApolloClient`인스턴스. 주기적으로 쿼리를 없애거나 캐시에 접근할 수 있다.|
 |`called`|boolean|`useLazyQuery`로부터 반환되는 속성. `useLazyQuery`가 호출되었는지 여부를 나타낸다.|
+
+## Mutation
+
+### Table of Contents
+- [Query](#query)
+- [Mutation](#mutation)
+	- [뮤테이션 실행](#뮤테이션-실행)
+	- [뮤테이션 실행후 캐시 업데이트](#뮤테이션-실행후-캐시-업데이트)
+
+### 뮤테이션 실행
+`useMutation` [React hook](https://reactjs.org/docs/hooks-intro.html)은 Apollo에서 뮤테이션을 실행하기 위한 기본 API입니다. React 구성 요소 내에서 뮤테이션을 실행하려면 `useMutation`를 호출하고 GraphQL 쿼리 문자열을 매개변수로 전달합니다. 구성 요소가 렌더링되면 `useMutation`는 다음과 같은 속성을 반환합니다.
+- 뮤테이션을 실행하는 함수
+- 뮤테이션의 상태를 나타내는 객체
+
+#### Code example
+```javascript
+import gql from 'graphql-tag';
+import { useMutation } from '@apollo/react-hooks';
+
+const ADD_TODO = gql`
+  mutation AddTodo($type: String!) {
+    addTodo(type: $type) {
+      id
+      type
+    }
+  }
+`;
+
+function AddTodo() {
+  let input;
+  const [addTodo, { data }] = useMutation(ADD_TODO);
+
+  return (
+    <div>
+      <form
+        onSubmit={e => {
+          e.preventDefault();
+          addTodo({ variables: { type: input.value } });
+          input.value = '';
+        }}
+      >
+        <input
+          ref={node => {
+            input = node;
+          }}
+        />
+        <button type="submit">Add Todo</button>
+      </form>
+    </div>
+  );
+}
+```
+`useMutation`은 뮤테이션을 바로 실행하지 않습니다. 대신에, 뮤테이션을 실행할 수 있는 `addTodo`함수와 뮤테이션 실행후 응답받을 `data`를 포함한 객체를 반환합니다. 그 후, 위의 예에서는 버튼클릭시 `addTodo`함수가 호출되며 뮤테이션이 실행됩니다. `useMutation`이 반환하는 인자의 두번째 객체는 뮤테이션 실행전, 실행중, 완료 상태에서 각각 다음과 같은 상태를 가지며 객체 내의 속성들은 다음과 같은 역할을 합니다.
+- 실행전
+```javascript
+{
+  loading: false,
+  called: false,
+  client: [ApolloClient 인스턴스]
+}
+```
+- 실행중
+```javascript
+{
+  loading: true,
+  error: undefined
+  data: undefined
+  called: true,
+  client: [ApolloClient 인스턴스]
+}
+```
+- 완료
+```javascript
+{
+  loading: false,
+  error: undefined | [GraphQL error객체]
+  data: undefined | [응답받은 데이터]
+  called: true,
+  client: [ApolloClient 인스턴스]
+}
+```
+- loading : 현재 뮤테이션이 요청중인지 여부
+- error : 뮤테이션 요청중 발생한 에러 객체. 에러가 발생하지 않았다면 `undefined`가 됨.
+- data : 뮤테이션 실행 후 응답받은 데이터. 에러가 발생했다면 `undefined`가 됨. 만약, `useMutation`의 옵션에 `ignoreResults: true`를 준다면 완료후라도 `undefined`가 됨. 
+- called : 뮤테이션이 실행함수의 호출 여부
+- client : `ApolloClient`인스턴스
+
+### 뮤테이션 실행후 캐시 업데이트
+한 예로 게시판을 생각한다면, 뮤테이션을 실행하는 경우는 게시글 생성, 수정, 삭제 등이 있습니다. 이 때, 뮤테이션은 백앤드의 실제적인 데이터를 변경하므로 클라이언트쪽의 캐시도 업데이트가 되어야 합니다. 뮤테이션 관련하여 캐시 업데이트는 2가지 경우로 나누어집니다.
+
+- 하나의 엔티티만 변경한 경우(ex. 게시글 하나만 수정)
+- 여러개의 엔티티를 수정하거나 엔티티를 생성, 삭제하는 경우
+
+#### 하나의 엔티티만 변경한 경우
+하나의 엔티티만 변경한 경우, 뮤테이션이 성공적으로 완료된 후, Apollo가 자동으로 캐시를 업데이트 합니다. 단, 한가지 조건이 있는데 변경한 엔티티의 `id`를 반환해야 합니다.
+```javascript
+import gql from 'graphql-tag';
+import { useMutation } from '@apollo/react-hooks';
+
+const UPDATE_TODO = gql`
+  mutation UpdateTodo($id: String!, $type: String!) {
+    updateTodo(id: $id, type: $type) {
+      id
+      type
+    }
+  }
+`;
+
+function Todos() {
+  const { loading, error, data } = useQuery(GET_TODOS);
+  const [updateTodo] = useMutation(UPDATE_TODO);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error :(</p>;
+
+  return data.todos.map(({ id, type }) => {
+    let input;
+
+    return (
+      <div key={id}>
+        <p>{type}</p>
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            updateTodo({ variables: { id, type: input.value } });
+
+            input.value = '';
+          }}
+        >
+          <input
+            ref={node => {
+              input = node;
+            }}
+          />
+          <button type="submit">Update Todo</button>
+        </form>
+      </div>
+    );
+  });
+}
+```
+위의 예에서 뮤테이션을 실행하면 변경된 todo의 `id`와 `type`를 반환하고 있습니다. Apollo는 캐시에서 각 엔티티를 `id`로 관리하므로 뮤테이션 실행 후, `id`를 반환한다면 Apollo가 캐시를 자동으로 업데이트 합니다.
+
+#### 여러개의 엔티티를 수정하거나 엔티티를 생성, 삭제하는 경우
+여러개의 엔티티를 변경하거나 생성, 삭제를 하는 경우, 캐시는 자동으로 업데이트 되지 않습니다. 이런 경우, `useMutation`의 옵션으로 줄 수 있는 `update`함수를 사용해야 합니다. 예를 들어, [뮤테이션 실행](#뮤테이션-실행)의 code example에서 `addTodo`뮤테이션이 실행되 새로운 하나의 할일이 추가된다면 캐시에도 업데이트 해야합니다. 이때, 다음과 같은 예제로 가능합니다.
+```javascript
+...
+
+const GET_TODOS = gql`
+  query GetTodos {
+    todos {
+      id
+      type
+    }
+  }
+`;
+
+function AddTodo() {
+  let input;
+  const [addTodo] = useMutation(
+    ADD_TODO,
+    {
+      update(cache, { data: { addTodo } }) {
+        const { todos } = cache.readQuery({ query: GET_TODOS });
+        cache.writeQuery({
+          query: GET_TODOS,
+          data: { todos: todos.concat([addTodo]) },
+        });
+      }
+    }
+  );
+
+  return (
+    <div>
+      <form
+        onSubmit={e => {
+          e.preventDefault();
+          addTodo({ variables: { type: input.value } });
+          input.value = "";
+        }}
+      >
+        <input
+          ref={node => {
+            input = node;
+          }}
+        />
+        <button type="submit">Add Todo</button>
+      </form>
+    </div>
+  );
+}
+
+...
+```
+`useMutation`의 옵션으로 `update`에 함수를 전달할 수 있는데 이때, 이 함수는 뮤테이션이 정상적으로 완료시 호출되며 이 함수는 첫번째 인자로 `cache`인스턴스, 두번째 인자로 `{ data: [응답된 데이터] }` 형태의 객체를 받습니다. 그 다음, `cache.readQuery({ query: GET_TODOS })`를 통해 기존의 `todos`를 얻어오며 여기에 새로 추가된 `addTodo`를 병합후 `cache.writeQuery`함수를 호출하여 기존의 캐시를 업데이트 합니다. `cache.writeQuery`가 호출될 경우, Apollo는 변경된 데이터를 참조하고 있던 쿼리들에 알리고 해당 캠포넌트들은 변경된 데이터를 반영하여 리렌더링 됩니다.
+
+> 만약 뮤테이션에 [optimistic response](https://www.apollographql.com/docs/react/performance/optimistic-ui/)를 적용했다면 `update`함수는 optimistic결과에 한번, 뮤테이션에 의해 응답된 실제결과 한번 총 2번 호출되게 됩니다.  
+> optimistic UI란 먼저 서버로 요청을 보내고 응답될 것으로 예상되는 임시데이터를 사용하여 미리 UI를 업데이트 합니다. 그 후, 서버로부터 실제결과가 응답되면 다시 한번 실제 데이터로 UI를 업데이트 하는 것을 말합니다.  
+> `useMutation`의 옵션으로 `optimisticResponse`에 객체를 넣어 줄 수 있는데, 이렇게 되면 뮤테이션 실행시 즉시 `update`함수가 실행되며 두번째 인자에 `optimisticResponse`에 넣어 주었던 객체가 전달됩니다. 그 후, 서버로부터 실제결과가 응답되면 다시 한 번 `update`함수를 호출합니다.
