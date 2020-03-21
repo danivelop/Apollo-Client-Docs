@@ -238,7 +238,7 @@ function DogPhoto({ breed }) {
 |`ssr`|boolean|server-side-rendering동안 쿼리 skip여부|
 |`displayName`|string|React 개발툴에 나타내기 위한 컴포넌트 이름. default값은 'Query'.|
 |`skip`|boolean|만약 `true`라면 쿼리가 실행되지 않습니다. `useLazyQuery`과 함께 사용할 수 없습니다.|
-|`onCompleted`|(data: TData `|` {}) => void|쿼리가 성공적으로 종료될때 호출되는 콜백함수|
+|`onCompleted`|(data: TData &#124; {}) => void|쿼리가 성공적으로 종료될때 호출되는 콜백함수|
 |`onError`|(error: ApolloError) => void|쿼리요청중 에러발생시 호출되는 콜백함수|
 |`context`|Record<string, any>|컴포넌트와 network interface간에 공유되는 context|
 |`partialRefetch`|boolean|...|
@@ -472,7 +472,7 @@ function AddTodo() {
 |`update`|(cache: DataProxy, mutationResult: FetchResult)|뮤테이션 실행완료후 호출되는 콜백함수이며 캐시를 업데이트 할 때 사용|
 |`ignoreResults`|boolean|만약 `true`라면 뮤테이션 결과에 대한 데이터가 반환되지 않습니다.|
 |`optimisticResponse`|Object|서버로부터 응답이 오기전에 예상되는 데이터를 넘겨줌으로써 UI를 빠르게 업데이트 할 수 있습니다.|
-|`refetchQueries`|Array<string`|`{ query: DocumentNode, variables?: TVariables}>`|` ((mutationResult: FetchResult) => Array<string`|`{ query: DocumentNode, variables?: TVariables}>)|...|
+|`refetchQueries`|Array<string &#124; { query: DocumentNode, variables?: TVariables}> &#124; ((mutationResult: FetchResult) => Array<string &#124; { query: DocumentNode, variables?: TVariables}>)|...|
 |`awaitRefetchQueries`|boolean|...|
 |`onCompleted`|(data: TData) => void|뮤테이션이 정상적으로 완료된 후 호출되는 콜백함수|
 |`onError`|(error: ApolloError) => void|뮤테이션 실행중 에러발생시 호출되는 콜백함수|
