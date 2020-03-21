@@ -1,4 +1,5 @@
 
+
 # Apollo Client
 ## Introduction
 [Apollo client react공식문서](https://www.apollographql.com/docs/react)를 공부했던 내용들을 한글로 더 편하게 보고 가끔씩 잊어버린 내용들을 리마인드 하기 위해 기존의 공식문서에 부족한 설명이나 빠진내용을 추가하고 너무 자세하게 나와 오히려 빠른 학습에는 방해가 되는 내용은 삭제하며 내용을 정리하던 중, 이 내용을 공유하면 GraphQL을 공부하고 Apollo를 시작하는 분들에게 도움이 되지 않을까 해서 문서를 작성하게 되었습니다. Apollo공식문서도 언급되어 있듯이 기본적인 GraphQL 문법을 알고 React에서 `ApolloProvider`나 `ApolloClient`로 기본적인 셋팅이 되어있다고 가정하여 작성했습니다. GraphQL문법에 익숙하지 않으시다면 [GraphQL Guide](https://graphql-kr.github.io/learn/)를 먼저 학습하신 후 Apollo를 학습하시는 것을 추천드립니다.
@@ -231,7 +232,7 @@ function DogPhoto({ breed }) {
 |`query`|DocumentNode|graphql 쿼리|
 |`variables`|{ [key: string]: any }|쿼리실행에 필요한 변수|
 |`pollInterval`|number|`ms`형태의 polling interval 간격|
-|`notifyOnNetworkStatusChange`|boolean|요청에 따른 network status를 업데이트할지 여부|
+|`notifyOnNetworkStatusChange`|boolean|만약 `true`라면 쿼리요청에 따른 네트워크상태를 업데이트하며 상태가 변할 때마다 리렌더링을 합니다. 만약 `false`라면 쿼리에 따른 응답데이터 변경 여부에 따라 리렌더링을 합니다. 주로 refetching 진행여부를 나타내기위해 사용됩니다.|
 |`fetchPolicy`|FetchPolicy|네트워크 요청전략.|
 |`errorPolicy`|ErrorPolicy|에러여부에 따른 `data`포맷 핸들링|
 |`ssr`|boolean|server-side-rendering동안 쿼리 skip여부|
@@ -242,7 +243,7 @@ function DogPhoto({ breed }) {
 |`context`|Record<string, any>|컴포넌트와 network interface간에 공유되는 context|
 |`partialRefetch`|boolean|...|
 |`client`|ApolloClient|`ApolloClient`인스턴스|
-|`returnPartialData`|boolean|...|
+|`returnPartialData`|boolean|만약 `true`라면, 쿼리요청전 먼저 캐시에서 해당하는 데이터를 반환합니다. 그 후, 다음작업이 진행됩니다. 일반적으로 쿼리가 최초 요청되기 전에는 `useQuery`가 반환하는 `data`는 `undefined`이지만 이 옵션을 `true`로 설정한다면 요청전에 미리 캐시에 있는 데이터를 반환해 `data`를 셋팅함으로써 더 빠른 렌더링이 가능합니다.|
 
 #### Results
 |PROPERTY|TYPE|DESCRIPTION|
@@ -268,6 +269,7 @@ function DogPhoto({ breed }) {
 - [Mutation](#mutation)
 	- [뮤테이션 실행](#뮤테이션-실행)
 	- [뮤테이션 실행후 캐시 업데이트](#뮤테이션-실행후-캐시-업데이트)
+	- [useMutation API](#usemutation-api)
 
 ### 뮤테이션 실행
 `useMutation` [React hook](https://reactjs.org/docs/hooks-intro.html)은 Apollo에서 뮤테이션을 실행하기 위한 기본 API입니다. React 구성 요소 내에서 뮤테이션을 실행하려면 `useMutation`를 호출하고 GraphQL 쿼리 문자열을 매개변수로 전달합니다. 구성 요소가 렌더링되면 `useMutation`는 다음과 같은 속성을 반환합니다.
@@ -459,3 +461,29 @@ function AddTodo() {
 > 만약 뮤테이션에 [optimistic response](https://www.apollographql.com/docs/react/performance/optimistic-ui/)를 적용했다면 `update`함수는 optimistic결과에 한번, 뮤테이션에 의해 응답된 실제결과 한번 총 2번 호출되게 됩니다.  
 > optimistic UI란 먼저 서버로 요청을 보내고 응답될 것으로 예상되는 임시데이터를 사용하여 미리 UI를 업데이트 합니다. 그 후, 서버로부터 실제결과가 응답되면 다시 한번 실제 데이터로 UI를 업데이트 하는 것을 말합니다.  
 > `useMutation`의 옵션으로 `optimisticResponse`에 객체를 넣어 줄 수 있는데, 이렇게 되면 뮤테이션 실행시 즉시 `update`함수가 실행되며 두번째 인자에 `optimisticResponse`에 넣어 주었던 객체가 전달됩니다. 그 후, 서버로부터 실제결과가 응답되면 다시 한 번 `update`함수를 호출합니다.
+
+### useMutation API
+
+#### Options
+|OPTION|TYPE|DESCRIPTION|
+|--|--|--|
+|`mutation`|DocumentNode|graphql 뮤테이션|
+|`variables`|{ [key: string]: any }|뮤테이션 실행에 필요한 변수|
+|`update`|(cache: DataProxy, mutationResult: FetchResult)|뮤테이션 실행완료후 호출되는 콜백함수이며 캐시를 업데이트 할 때 사용|
+|`ignoreResults`|boolean|만약 `true`라면 뮤테이션 결과에 대한 데이터가 반환되지 않습니다.|
+|`optimisticResponse`|Object|서버로부터 응답이 오기전에 예상되는 데이터를 넘겨줌으로써 UI를 빠르게 업데이트 할 수 있습니다.|
+|`refetchQueries`|Array<string`|`{ query: DocumentNode, variables?: TVariables}>`|` ((mutationResult: FetchResult) => Array<string`|`{ query: DocumentNode, variables?: TVariables}>)|...|
+|`awaitRefetchQueries`|boolean|...|
+|`onCompleted`|(data: TData) => void|뮤테이션이 정상적으로 완료된 후 호출되는 콜백함수|
+|`onError`|(error: ApolloError) => void|뮤테이션 실행중 에러발생시 호출되는 콜백함수|
+|`context`|Record<string, any>|컴포넌트와 network interface간에 공유되는 context|
+|`client`|ApolloClient|`ApolloClient`인스턴스|
+
+#### Results
+|PROPERTY|TYPE|DESCRIPTION|
+|--|--|--|
+|`data`|TData|뮤테이션 실행 후 반환되는 데이터. 뮤테이션의 옵션으로 `ignoreResults`가 `true`일 경우, `undefined`가 됩니다.|
+|`loading`|boolean|뮤테이션 실행중 여부|
+|`error`|ApolloError|뮤테이션으로부터 반환되는 에러객체|
+|`called`|boolean|뮤테이션 실행함수가 호출되었는지 여부|
+|`client`|ApolloClient|`ApolloClient`인스턴스. `client.readQuery` 또는 `client.writeQuery`로 캐시를 업데이트 할 수 있습니다.|
