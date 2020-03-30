@@ -176,7 +176,7 @@ function DogPhoto({ breed }) {
   
 ...
 ```
-`errorPolicy`의 값으로 'none'를 주게 되면 응답과정에서 에러가 발생 했을 경우 `data`의 값은 `undefined`가 됩니다.
+`errorPolicy`의 값으로 `none`를 주게 되면 응답과정에서 에러가 발생 했을 경우 `data`의 값은 `undefined`가 됩니다.
 ```javascript
 ...
 
@@ -189,7 +189,7 @@ function DogPhoto({ breed }) {
   
 ...
 ```
-하지만, `errorPolicy`의 값으로 'all'를 주게 되면 응답과정에서 에러가 발생하더라도 `data`의 값은 포맷은 일치하지만 값으로 `null`이 들어간 응답객체가 됩니다.
+하지만, `errorPolicy`의 값으로 `all`를 주게 되면 응답과정에서 에러가 발생하더라도 `data`의 값은 포맷은 일치하지만 값으로 `null`이 들어간 응답객체가 됩니다.
 > 응답에서 반환되는 `error`객체는 `graphQLErrors`, `networkError`, `message`, `extraInfo`를 키값으로 가지고 있는 객체이며 에러메세지는 `error.graphQLErrors[0].message`에 들어가게 됩니다.
 
 ### 쿼리 수동실행
